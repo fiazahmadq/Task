@@ -30,4 +30,3 @@ pnpm-debug.log*
 # IDE / local
 .idea/
 .vscode/
-.claude/

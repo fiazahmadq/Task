@@ -1,0 +1,1 @@
+- [NexusAI Project Conventions](project_nexusai.md) — Stack (Next.js 16/MUI v7/Zustand v5), file structure, Model interface, component locations, routing
