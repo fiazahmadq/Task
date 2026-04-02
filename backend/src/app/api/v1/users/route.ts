@@ -9,20 +9,54 @@ import { successResponse } from '@/types/api.types'
 import { ConflictError } from '@/lib/errors'
 import bcrypt from 'bcrypt'
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:4000',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:4000',
+]
+
+function getCORSHeaders(req: NextRequest) {
+  const origin = req.headers.get('origin') || ''
+  const headers = new Headers()
+  
+  if (allowedOrigins.includes(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin)
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    headers.set('Access-Control-Allow-Credentials', 'true')
+  }
+  
+  return headers
+}
+
+export const OPTIONS = (req: NextRequest) => {
+  return new NextResponse(null, { headers: getCORSHeaders(req) })
+}
+
 // GET /api/v1/users/me
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const authError = await requireAuth(req)
-  if (authError) return authError
+  if (authError) {
+    getCORSHeaders(req).forEach((value, key) => authError.headers.set(key, value))
+    return authError
+  }
 
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) {
-    return NextResponse.json({ error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } }, { status: 401 })
+    const response = NextResponse.json({ error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } }, { status: 401 })
+    getCORSHeaders(req).forEach((value, key) => response.headers.set(key, value))
+    return response
   }
   await connectDB()
 
   const user = await User.findById(userId).lean()
-  return NextResponse.json(successResponse(user))
+  const response = NextResponse.json(successResponse(user))
+  getCORSHeaders(req).forEach((value, key) => response.headers.set(key, value))
+  return response
 })
 
 // POST /api/v1/users — signup
@@ -37,18 +71,25 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   const user = await User.create({ email: body.email, name: body.name, passwordHash })
 
   const { passwordHash: _, ...safeUser } = user.toObject()
-  return NextResponse.json(successResponse(safeUser), { status: 201 })
+  const response = NextResponse.json(successResponse(safeUser), { status: 201 })
+  getCORSHeaders(req).forEach((value, key) => response.headers.set(key, value))
+  return response
 })
 
 // PATCH /api/v1/users/me — update profile
 export const PATCH = withErrorHandler(async (req: NextRequest) => {
   const authError = await requireAuth(req)
-  if (authError) return authError
+  if (authError) {
+    getCORSHeaders(req).forEach((value, key) => authError.headers.set(key, value))
+    return authError
+  }
 
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) {
-    return NextResponse.json({ error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } }, { status: 401 })
+    const response = NextResponse.json({ error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } }, { status: 401 })
+    getCORSHeaders(req).forEach((value, key) => response.headers.set(key, value))
+    return response
   }
   const body = await req.json()
   const allowed = ['name', 'language']
@@ -56,5 +97,7 @@ export const PATCH = withErrorHandler(async (req: NextRequest) => {
 
   await connectDB()
   const user = await User.findByIdAndUpdate(userId, updates, { new: true }).lean()
-  return NextResponse.json(successResponse(user))
+  const response = NextResponse.json(successResponse(user))
+  getCORSHeaders(req).forEach((value, key) => response.headers.set(key, value))
+  return response
 })
