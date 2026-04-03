@@ -357,9 +357,9 @@ export default function ChatHub() {
         {/* Left Sidebar — Models */}
         <Box
           sx={{
-            width: 200,
-            borderRight: '1px solid #E5E7EB',
-            display: 'flex',
+            width: { xs: 0, md: 220 },
+            borderRight: { xs: 'none', md: '1px solid #E5E7EB' },
+            display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
             bgcolor: 'white',
             flexShrink: 0,
@@ -430,6 +430,31 @@ export default function ChatHub() {
             overflow: 'hidden',
           }}
         >
+          {/* Mobile model picker for small screens */}
+          <Box
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              overflowX: 'auto',
+              gap: 1,
+              px: 2,
+              py: 1,
+              bgcolor: 'white',
+              borderBottom: '1px solid #E5E7EB',
+            }}
+          >
+            {modelsData.slice(0, 8).map((model) => (
+              <Button
+                key={model.id}
+                size="small"
+                onClick={() => setActiveModelId(model.id)}
+                variant={activeModelId === model.id ? 'contained' : 'outlined'}
+                sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                {model.name}
+              </Button>
+            ))}
+          </Box>
+
           {/* Message area or welcome card */}
           <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 3, pt: 3 }}>
             <Box sx={{ maxWidth: 700, mx: 'auto' }}>
@@ -469,7 +494,13 @@ export default function ChatHub() {
                 <Typography variant="overline" fontWeight={700} color="primary.main" display="block" mt={2} mb={1.5}>
                   ✨ WHAT WOULD YOU LIKE TO DO TODAY?
                 </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                    gap: 1.5,
+                  }}
+                >
                   {welcomeTiles.map((tile) => (
                     <Paper
                       key={tile.title}
@@ -665,7 +696,8 @@ export default function ChatHub() {
               sx={{
                 display: 'flex',
                 gap: 1,
-                overflowX: 'auto',
+                flexWrap: { xs: 'nowrap', sm: 'wrap' },
+                overflowX: { xs: 'auto', sm: 'hidden' },
                 mb: 2,
                 '&::-webkit-scrollbar': { display: 'none' },
               }}
@@ -679,6 +711,7 @@ export default function ChatHub() {
                   bgcolor: '#111',
                   color: 'white',
                   whiteSpace: 'nowrap',
+                  minWidth: 90,
                   '&:hover': { bgcolor: '#333' },
                 }}
               >
@@ -692,6 +725,7 @@ export default function ChatHub() {
                   sx={{
                     borderRadius: 6,
                     whiteSpace: 'nowrap',
+                    minWidth: 130,
                     color: 'text.secondary',
                     borderColor: '#E5E7EB',
                   }}

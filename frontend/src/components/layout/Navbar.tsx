@@ -7,6 +7,8 @@ import Link from 'next/link';
 import LanguageIcon from '@mui/icons-material/Language';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import DiamondIcon from '@mui/icons-material/Diamond';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import { useLanguage } from '@/i18n/LanguageProvider';
 import { LanguageCode } from '@/i18n/translations';
 
@@ -20,10 +22,14 @@ const navItems = [
 export default function Navbar() {
   const pathname = usePathname();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileNavAnchor, setMobileNavAnchor] = useState<null | HTMLElement>(null);
   const { language, setLanguage, t } = useLanguage();
   const openLang = Boolean(anchorEl);
+  const openMobileNav = Boolean(mobileNavAnchor);
   const handleLangClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget); };
   const handleLangClose = () => { setAnchorEl(null); };
+  const handleMobileNavOpen = (event: React.MouseEvent<HTMLElement>) => { setMobileNavAnchor(event.currentTarget); };
+  const handleMobileNavClose = () => { setMobileNavAnchor(null); };
 
   const languages = [
     { code: 'SA', name: 'العربية' },
@@ -79,6 +85,15 @@ export default function Navbar() {
           </Typography>
         </Box>
 
+        {/* Mobile nav button */}
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' }, color: 'text.primary' }}
+          onClick={openMobileNav ? handleMobileNavClose : handleMobileNavOpen}
+          aria-label={openMobileNav ? 'Close navigation menu' : 'Open navigation menu'}
+        >
+          {openMobileNav ? <CloseIcon /> : <MenuIcon />}
+        </IconButton>
+
         {/* Center Nav Links */}
         <Stack direction="row" spacing={3} display={{ xs: 'none', md: 'flex' }}>
           {navItems.map((item) => {
@@ -105,7 +120,34 @@ export default function Navbar() {
             );
           })}
         </Stack>
-
+        <Menu
+          anchorEl={mobileNavAnchor}
+          open={openMobileNav}
+          onClose={handleMobileNavClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            sx: {
+              width: 220,
+              mt: 1,
+            },
+          }}
+        >
+          {navItems.map((item) => (
+            <MenuItem
+              key={item.key}
+              component={Link}
+              href={item.path}
+              onClick={handleMobileNavClose}
+              sx={{
+                bgcolor: pathname === item.path || (pathname.startsWith(item.path) && item.path !== '/') ? 'rgba(25,118,210,0.08)' : 'transparent',
+                color: pathname === item.path || (pathname.startsWith(item.path) && item.path !== '/') ? 'primary.main' : 'text.primary',
+              }}
+            >
+              {t(item.key as 'nav.chatHub' | 'nav.marketplace' | 'nav.agents' | 'nav.discoverNew')}
+            </MenuItem>
+          ))}
+        </Menu>
         {/* Right Actions */}
         <Stack direction="row" spacing={2} alignItems="center">
           <>
